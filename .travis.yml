@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t iotdev-tester .
+
+script:
+  - docker run -i -t --rm iotdev-tester
