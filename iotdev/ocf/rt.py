@@ -46,7 +46,7 @@ class ResourceType():
     id = StringProperty(meta=True, writable=False)
     rt = ArrayProperty[StringProperty](meta=True, required=True,
                                        writable=False)
-    _if = ArrayProperty[StringProperty](name="if", meta=True, required=True,
+    if_ = ArrayProperty[StringProperty](name="if", meta=True, required=True,
                                         writable=False)
 
     def __init__(self, resource):
