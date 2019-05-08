@@ -27,31 +27,30 @@ class TestResource(TestCase):
 
     def test_type(self):
         """Test use of typed resource"""
-        self.assertTrue(issubclass(self.fridge.type, Refrigeration))
-        self.assertIsInstance(self.fridge.r, Refrigeration)
-        self.assertEqual(self.fridge.r.n, 'my_fridge')
-        self.fridge.r.n = 'your_fridge'
-        self.assertEqual(self.fridge.r.n, 'your_fridge')
+        self.assertIsInstance(self.fridge.prop, Refrigeration)
+        self.assertEqual(self.fridge.prop.n, 'my_fridge')
+        self.fridge.prop.n = 'your_fridge'
+        self.assertEqual(self.fridge.prop.n, 'your_fridge')
         self.assertEqual(self.fridge['n'], 'your_fridge')
 
     def test_modify_type(self):
         """Test ability to modify resource type via `rt` property"""
-        self.assertIsInstance(self.fridge.r, Refrigeration)
-        self.assertNotIsInstance(self.fridge.r, BinarySwitch)
-        self.assertTrue(hasattr(self.fridge.r, 'defrost'))
-        self.assertFalse(hasattr(self.fridge.r, 'value'))
-        self.fridge.r.rt = ['oic.r.switch.binary']
-        self.assertNotIsInstance(self.fridge.r, Refrigeration)
-        self.assertIsInstance(self.fridge.r, BinarySwitch)
-        self.assertFalse(hasattr(self.fridge.r, 'defrost'))
-        self.assertTrue(hasattr(self.fridge.r, 'value'))
+        self.assertIsInstance(self.fridge.prop, Refrigeration)
+        self.assertNotIsInstance(self.fridge.prop, BinarySwitch)
+        self.assertTrue(hasattr(self.fridge.prop, 'defrost'))
+        self.assertFalse(hasattr(self.fridge.prop, 'value'))
+        self.fridge.prop.rt = ['oic.r.switch.binary']
+        self.assertNotIsInstance(self.fridge.prop, Refrigeration)
+        self.assertIsInstance(self.fridge.prop, BinarySwitch)
+        self.assertFalse(hasattr(self.fridge.prop, 'defrost'))
+        self.assertTrue(hasattr(self.fridge.prop, 'value'))
 
     def test_multi_type(self):
         """Test multi-valued `rt` property"""
-        self.assertIsInstance(self.fridge.r, Refrigeration)
-        self.assertNotIsInstance(self.fridge.r, BinarySwitch)
-        self.fridge.r.rt = ['oic.r.refrigeration', 'oic.r.switch.binary']
-        self.assertIsInstance(self.fridge.r, Refrigeration)
-        self.assertIsInstance(self.fridge.r, BinarySwitch)
-        self.assertTrue(hasattr(self.fridge.r, 'defrost'))
-        self.assertTrue(hasattr(self.fridge.r, 'value'))
+        self.assertIsInstance(self.fridge.prop, Refrigeration)
+        self.assertNotIsInstance(self.fridge.prop, BinarySwitch)
+        self.fridge.prop.rt = ['oic.r.refrigeration', 'oic.r.switch.binary']
+        self.assertIsInstance(self.fridge.prop, Refrigeration)
+        self.assertIsInstance(self.fridge.prop, BinarySwitch)
+        self.assertTrue(hasattr(self.fridge.prop, 'defrost'))
+        self.assertTrue(hasattr(self.fridge.prop, 'value'))
