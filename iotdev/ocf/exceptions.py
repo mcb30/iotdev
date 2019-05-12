@@ -32,7 +32,22 @@ class OcfExceptionRegistry(UserDict):
 OcfExceptions = OcfExceptionRegistry()
 
 
-class OcfException(Exception):
+class OcfExceptionMeta(type):
+    """OCF exception metaclass"""
+
+    def __call__(cls, *args, **kwargs):
+        """Construct exception subclass using callable syntax
+
+        An OCF exception subclass may be constructed using
+        `OcfException(status)`, where `status` is the HTTP status
+        code.
+        """
+        if cls.status is None:
+            return OcfExceptions[args[0]]
+        return super().__call__(cls, *args, **kwargs)
+
+
+class OcfException(Exception, metaclass=OcfExceptionMeta):
     """OCF exception"""
 
     status = None
@@ -46,11 +61,6 @@ class OcfException(Exception):
 
     This is the HTTP reason phrase as defined by RFC 7231.
     """
-
-    def __new__(cls, *args, **kwargs):
-        if cls.status is None:
-            return OcfExceptions[args[0]]
-        return super().__new__(cls, *args, **kwargs)
 
     def __str__(self):
         return self.phrase
