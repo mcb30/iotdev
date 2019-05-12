@@ -56,3 +56,19 @@ class TestResource(TestCase):
         self.assertIsInstance(self.fridge.prop, BinarySwitch)
         self.assertTrue(hasattr(self.fridge.prop, 'defrost'))
         self.assertTrue(hasattr(self.fridge.prop, 'value'))
+
+    def test_interface(self):
+        """Test accessing resource via interface"""
+        self.assertIn('oic.if.baseline', self.fridge.intf)
+        baseline = self.fridge.intf['oic.if.baseline'].retrieve()
+        self.assertEqual(baseline['filter'], 99)
+        self.assertIn('rt', baseline)
+        rw = self.fridge.intf['oic.if.rw'].retrieve()
+        self.assertIn('n', rw)
+        self.assertNotIn('rt', rw)
+        self.fridge.intf['oic.if.a'].update({
+            'rapidFreeze': True,
+            'n': 'ignored_name',
+        })
+        self.assertTrue(self.fridge.prop.rapidFreeze)
+        self.assertEqual(self.fridge.prop.n, 'my_fridge')
