@@ -27,9 +27,9 @@ class Resource(UserDict):
     def prop(self):
         """Resource properties
 
-        This object provides named-attribute access to resource
-        property values.  The class of this object is dynamically
-        constructed based on the `rt` state value(s).
+        This object provides both dictionary and named-attribute
+        access to resource property values.  The class of this object
+        is dynamically constructed based on the `rt` state value(s).
         """
         if self._prop_type is None:
             rt = self.data.get('rt', ())

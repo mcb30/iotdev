@@ -39,8 +39,46 @@ class ResourceTypeRegistry(UserDict):
 ResourceTypes = ResourceTypeRegistry()
 
 
-class ResourceType():
-    """Resource type base class"""
+class ResourceTypeMeta(type):
+    """Resource type metaclass
+
+    A resource type class may be used as a dictionary in which the
+    keys are the property names (which may not match the attribute
+    names) and the values are the property objects.
+    """
+
+    def __new__(cls, clsname, bases, namespace, **kwargs):
+        # pylint: disable=protected-access
+        namespace['_properties'] = {
+            k: v for b in reversed(bases) for k, v in b._properties.items()
+        }
+        return super().__new__(cls, clsname, bases, namespace, **kwargs)
+
+    def __getitem__(cls, key):
+        return cls._properties[key]
+
+    def __setitem__(cls, key, value):
+        cls._properties[key] = value
+
+    def __contains__(cls, key):
+        return key in cls._properties
+
+    def __iter__(cls):
+        return iter(cls._properties)
+
+    def __len__(cls):
+        return len(cls._properties)
+
+
+class ResourceType(metaclass=ResourceTypeMeta):
+    """Resource type base class
+
+    A resource type object may be used as a dictionary in which the
+    keys are the property names (which may not match the attribute
+    names) and the values are the current state values.
+    """
+
+    _properties = {}
 
     n = StringProperty(meta=True)
     id = StringProperty(meta=True, writable=False)
@@ -60,6 +98,21 @@ class ResourceType():
         if name is not None:
             cls.__name__ = cls.__qualname__ = name
         ResourceTypes.register(cls)
+
+    def __getitem__(self, key):
+        return self._properties[key].__get__(self, type(self))
+
+    def __setitem__(self, key, value):
+        self._properties[key].__set__(self, value)
+
+    def __contains__(self, key):
+        return key in self._properties
+
+    def __iter__(self):
+        return iter(self._properties)
+
+    def __len__(self):
+        return len(self._properties)
 
 
 class BinarySwitch(ResourceType, name='oic.r.switch.binary'):

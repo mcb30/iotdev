@@ -58,10 +58,11 @@ class Property():
         state = self.to_state(value)
         instance.resource[self.name] = state
 
-    def __set_name__(self, _owner, name):
+    def __set_name__(self, owner, name):
         """Set descriptor name"""
         if self.name is None:
             self.name = name
+        owner[self.name] = self
 
     @staticmethod
     def from_state(state):

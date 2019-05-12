@@ -29,8 +29,10 @@ class TestResource(TestCase):
         """Test use of typed resource"""
         self.assertIsInstance(self.fridge.prop, Refrigeration)
         self.assertEqual(self.fridge.prop.n, 'my_fridge')
+        self.assertEqual(self.fridge.prop['n'], 'my_fridge')
         self.fridge.prop.n = 'your_fridge'
         self.assertEqual(self.fridge.prop.n, 'your_fridge')
+        self.assertEqual(self.fridge.prop['n'], 'your_fridge')
         self.assertEqual(self.fridge['n'], 'your_fridge')
 
     def test_modify_type(self):
