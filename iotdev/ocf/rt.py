@@ -50,22 +50,16 @@ class ResourceType():
                                         writable=False)
 
     def __init__(self, resource):
-        self._resource = resource
+        self.resource = resource
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self._resource)
+        return '%s(%r)' % (self.__class__.__name__, self.resource)
 
     def __init_subclass__(cls, name=None, **kwargs):
         super().__init_subclass__(**kwargs)
         if name is not None:
             cls.__name__ = cls.__qualname__ = name
         ResourceTypes.register(cls)
-
-    def __getitem__(self, key):
-        return self._resource[key]
-
-    def __setitem__(self, key, value):
-        self._resource[key] = value
 
 
 class BinarySwitch(ResourceType, name='oic.r.switch.binary'):

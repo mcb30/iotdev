@@ -48,7 +48,7 @@ class Property():
         if instance is None:
             return self
         try:
-            state = instance[self.name]
+            state = instance.resource[self.name]
         except KeyError:
             return self.default
         return self.from_state(state)
@@ -56,7 +56,7 @@ class Property():
     def __set__(self, instance, value):
         """Set value"""
         state = self.to_state(value)
-        instance[self.name] = state
+        instance.resource[self.name] = state
 
     def __set_name__(self, _owner, name):
         """Set descriptor name"""
