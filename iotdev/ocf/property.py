@@ -1,5 +1,7 @@
 """Resource properties"""
 
+from uuid import UUID
+
 
 class Property():
     """A resource property
@@ -51,11 +53,11 @@ class Property():
             state = instance.resource[self.name]
         except KeyError:
             return self.default
-        return self.from_state(state)
+        return self.canonicalise(state)
 
     def __set__(self, instance, value):
         """Set value"""
-        state = self.to_state(value)
+        state = self.canonicalise(value)
         instance.resource[self.name] = state
 
     def __set_name__(self, owner, name):
@@ -65,50 +67,35 @@ class Property():
         owner[self.name] = self
 
     @staticmethod
-    def from_state(state):
-        """Convert from state dictionary value"""
-        return state
-
-    @staticmethod
-    def to_state(state):
-        """Convert to state dictionary value"""
+    def canonicalise(state):
+        """Convert to canonical type"""
         return state
 
 
 class BooleanProperty(Property):
     """A boolean-valued property"""
 
-    @staticmethod
-    def from_state(state):
-        return bool(state)
-
-    @staticmethod
-    def to_state(state):
-        return bool(state)
+    canonicalise = bool
 
 
 class IntegerProperty(Property):
     """An integer-valued property"""
 
-    @staticmethod
-    def from_state(state):
-        return int(state)
-
-    @staticmethod
-    def to_state(state):
-        return int(state)
+    canonicalise = int
 
 
 class StringProperty(Property):
     """A string-valued property"""
 
-    @staticmethod
-    def from_state(state):
-        return str(state)
+    canonicalise = str
+
+
+class UUIDProperty(Property):
+    """A UUID-valued property"""
 
     @staticmethod
-    def to_state(state):
-        return str(state)
+    def canonicalise(state):
+        return state if isinstance(state, UUID) else UUID(state)
 
 
 class ArrayPropertyMeta(type):
@@ -125,8 +112,5 @@ class ArrayProperty(Property, metaclass=ArrayPropertyMeta):
 
     subtype = Property
 
-    def from_state(self, state):
-        return [self.subtype.from_state(x) for x in state]
-
-    def to_state(self, state):
-        return [self.subtype.to_state(x) for x in state]
+    def canonicalise(self, state):
+        return tuple(self.subtype.canonicalise(x) for x in state)

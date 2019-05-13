@@ -2,7 +2,7 @@
 
 from collections import UserDict
 from .property import (BooleanProperty, IntegerProperty, StringProperty,
-                       ArrayProperty)
+                       UUIDProperty, ArrayProperty)
 
 
 class ResourceTypeRegistry(UserDict):
@@ -113,6 +113,12 @@ class ResourceType(metaclass=ResourceTypeMeta):
 
     def __len__(self):
         return len(self._properties)
+
+
+class Device(ResourceType, name='oic.wk.d'):
+    """A device"""
+
+    di = UUIDProperty(writable=False)
 
 
 class BinarySwitch(ResourceType, name='oic.r.switch.binary'):

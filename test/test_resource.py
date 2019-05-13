@@ -1,6 +1,7 @@
 from unittest import TestCase
+from uuid import UUID
 from iotdev.ocf.resource import Resource
-from iotdev.ocf.rt import BinarySwitch, Refrigeration
+from iotdev.ocf.rt import Device, BinarySwitch, Refrigeration
 
 
 class TestResource(TestCase):
@@ -14,6 +15,10 @@ class TestResource(TestCase):
             'rapidCool': True,
             'rapidFreeze': False,
             'rt': ['oic.r.refrigeration'],
+        })
+        self.device = Resource({
+            'rt': ['oic.wk.d'],
+            'di': '4b2e71c3-7f89-44f1-ba58-c8ed780ce780',
         })
 
     def test_as_dict(self):
@@ -72,3 +77,16 @@ class TestResource(TestCase):
         })
         self.assertTrue(self.fridge.prop.rapidFreeze)
         self.assertEqual(self.fridge.prop.n, 'my_fridge')
+
+    def test_uuid(self):
+        """Test UUID property type"""
+        self.assertIsInstance(self.device.prop, Device)
+        self.assertIsInstance(self.device.prop.di, UUID)
+        self.assertEqual(self.device.prop.di,
+                         UUID('4b2e71c3-7f89-44f1-ba58-c8ed780ce780'))
+        self.device.prop.di = '60ec327c-3057-4044-8462-2136b2d53c31'
+        self.assertEqual(self.device.prop.di,
+                         UUID('60ec327c-3057-4044-8462-2136b2d53c31'))
+        self.device.prop.di = UUID('6f0398c1-ddc7-443e-bf58-64c4c248f5bf')
+        self.assertEqual(self.device.prop.di,
+                         UUID('6f0398c1-ddc7-443e-bf58-64c4c248f5bf'))
