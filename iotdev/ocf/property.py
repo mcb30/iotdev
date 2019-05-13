@@ -50,7 +50,7 @@ class Property():
         if instance is None:
             return self
         try:
-            state = instance.resource[self.name]
+            state = instance.resource.state[self.name]
         except KeyError:
             return self.default
         return self.canonicalise(state)
@@ -58,7 +58,7 @@ class Property():
     def __set__(self, instance, value):
         """Set value"""
         state = self.canonicalise(value)
-        instance.resource[self.name] = state
+        instance.resource.state[self.name] = state
 
     def __set_name__(self, owner, name):
         """Set descriptor name"""

@@ -22,23 +22,24 @@ class TestResource(TestCase):
         })
 
     def test_as_dict(self):
-        """Test ability to treat resource as a state dictionary"""
-        self.assertEqual(self.fridge['n'], 'my_fridge')
-        self.assertEqual(len(self.fridge), 7)
-        self.assertIn('defrost', self.fridge)
-        self.assertIn(99, self.fridge.values())
-        self.fridge['filter'] = 42
-        self.assertIn(42, self.fridge.values())
+        """Test ability to treat resource state as a dictionary"""
+        self.assertEqual(self.fridge.state['n'], 'my_fridge')
+        self.assertEqual(len(self.fridge.state), 7)
+        self.assertIn('defrost', self.fridge.state)
+        self.assertIn(99, self.fridge.state.values())
+        self.fridge.state['filter'] = 42
+        self.assertIn(42, self.fridge.state.values())
 
     def test_type(self):
         """Test use of typed resource"""
+        self.assertEqual(self.fridge.state.rt, Refrigeration)
         self.assertIsInstance(self.fridge.prop, Refrigeration)
         self.assertEqual(self.fridge.prop.n, 'my_fridge')
         self.assertEqual(self.fridge.prop['n'], 'my_fridge')
         self.fridge.prop.n = 'your_fridge'
         self.assertEqual(self.fridge.prop.n, 'your_fridge')
         self.assertEqual(self.fridge.prop['n'], 'your_fridge')
-        self.assertEqual(self.fridge['n'], 'your_fridge')
+        self.assertEqual(self.fridge.state['n'], 'your_fridge')
 
     def test_modify_type(self):
         """Test ability to modify resource type via `rt` property"""
