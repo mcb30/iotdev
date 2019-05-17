@@ -91,7 +91,7 @@ class ResourceTypeMeta(type):
         bases = sorted(set(ResourceTypes[x] for x in args)) or [ResourceType]
         if len(bases) == 1:
             return bases.pop()
-        name = '[%s]' % ','.join(x.__name__ for x in bases)
+        name = '(%s)' % '+'.join(x.__name__ for x in bases)
         return type(name, tuple(bases), {})
 
     #
