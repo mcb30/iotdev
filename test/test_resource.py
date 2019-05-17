@@ -1,7 +1,8 @@
 from unittest import TestCase
 from uuid import UUID
 from iotdev.ocf.resource import Resource
-from iotdev.ocf.rt import Device, BinarySwitch, Refrigeration
+from iotdev.ocf.rt import (Device, BinarySwitch, Brightness, Refrigeration,
+                           ResourceType)
 
 
 class TestResource(TestCase):
@@ -32,7 +33,7 @@ class TestResource(TestCase):
 
     def test_type(self):
         """Test use of typed resource"""
-        self.assertEqual(self.fridge.state.rt, Refrigeration)
+        self.assertEqual(self.fridge.rt, Refrigeration)
         self.assertIsInstance(self.fridge.prop, Refrigeration)
         self.assertEqual(self.fridge.prop.n, 'my_fridge')
         self.assertEqual(self.fridge.prop['n'], 'my_fridge')
@@ -41,7 +42,26 @@ class TestResource(TestCase):
         self.assertEqual(self.fridge.prop['n'], 'your_fridge')
         self.assertEqual(self.fridge.state['n'], 'your_fridge')
 
-    def test_modify_type(self):
+    def test_modify_type_via_rt(self):
+        """Test ability to modify resource type via `rt` attribute"""
+        self.assertIsInstance(self.fridge.prop, Refrigeration)
+        self.assertNotIsInstance(self.fridge.prop, BinarySwitch)
+        self.fridge.rt += BinarySwitch
+        self.assertIsInstance(self.fridge.prop, Refrigeration)
+        self.assertIsInstance(self.fridge.prop, BinarySwitch)
+        self.fridge.rt -= Refrigeration
+        self.assertNotIsInstance(self.fridge.prop, Refrigeration)
+        self.assertIsInstance(self.fridge.prop, BinarySwitch)
+        del self.fridge.rt
+        self.assertIsInstance(self.fridge.prop, ResourceType)
+        self.fridge.rt += 'oic.r.light.brightness'
+        self.assertIsInstance(self.fridge.prop, Brightness)
+        self.fridge.rt += 'oic.r.switch.binary'
+        self.assertIsInstance(self.fridge.prop, (BinarySwitch + Brightness))
+        self.fridge.rt = ['oic.r.refrigeration', 'oic.r.switch.binary']
+        self.assertIsInstance(self.fridge.prop, (BinarySwitch + Refrigeration))
+
+    def test_modify_type_via_prop(self):
         """Test ability to modify resource type via `rt` property"""
         self.assertIsInstance(self.fridge.prop, Refrigeration)
         self.assertNotIsInstance(self.fridge.prop, BinarySwitch)

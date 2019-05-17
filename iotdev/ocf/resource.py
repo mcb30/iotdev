@@ -3,7 +3,7 @@
 from collections import UserDict
 from collections.abc import Mapping
 from .interface import Interfaces
-from .rt import ResourceType
+from .rt import ResourceType, ResourceTypeMeta
 
 
 class ResourceState(UserDict):
@@ -15,24 +15,12 @@ class ResourceState(UserDict):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._rt = None
+        self.cached_rt = None
 
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
         if key == 'rt':
-            self._rt = None
-
-    @property
-    def rt(self):
-        """Resource type
-
-        This is the Python class dynamically constructed based on the
-        `rt` state value.
-        """
-        if self._rt is None:
-            rt = self.data.get('rt', ())
-            self._rt = ResourceType.from_rt(*rt)
-        return self._rt
+            self.cached_rt = None
 
 
 class ResourceInterfaces(Mapping):
@@ -70,10 +58,35 @@ class Resource():
 
     def __init__(self, state=None):
         self.state = ResourceState(state)
-        self._prop_type = None
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.state)
+
+    @property
+    def rt(self):
+        """Resource type
+
+        This is the Python class dynamically constructed based on the
+        `rt` state value.
+        """
+        state = self.state
+        if state.cached_rt is None:
+            rt = state.get('rt', ())
+            state.cached_rt = ResourceType.from_rt(*rt)
+        return state.cached_rt
+
+    @rt.setter
+    def rt(self, value):
+        """Set resource type"""
+        self.state['rt'] = (
+            value.to_rt() if isinstance(value, ResourceTypeMeta)
+            else value
+        )
+
+    @rt.deleter
+    def rt(self):
+        """Clear resource type"""
+        self.state['rt'] = ()
 
     @property
     def prop(self):
@@ -84,7 +97,7 @@ class Resource():
         is dynamically constructed based on the `rt` state value(s).
         """
         # pylint: disable=not-callable
-        return self.state.rt(self)
+        return self.rt(self)
 
     @property
     def intf(self):
