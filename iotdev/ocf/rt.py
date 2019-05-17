@@ -100,14 +100,14 @@ class ResourceTypeMeta(type):
 
     def __add__(cls, other):
         # pylint: disable=no-value-for-parameter
-        other_rt = (other.to_rt() if issubclass(other, ResourceType) else
+        other_rt = (other.to_rt() if isinstance(other, ResourceTypeMeta) else
                     {other} if isinstance(other, str) else
                     set(other))
         return cls.from_rt(*(cls.to_rt() | other_rt))
 
     def __sub__(cls, other):
         # pylint: disable=no-value-for-parameter
-        other_rt = (other.to_rt() if issubclass(other, ResourceType) else
+        other_rt = (other.to_rt() if isinstance(other, ResourceTypeMeta) else
                     {other} if isinstance(other, str) else
                     set(other))
         return cls.from_rt(*(cls.to_rt() - other_rt))
@@ -121,13 +121,13 @@ class ResourceTypeMeta(type):
     def __subclasscheck__(cls, subclass):
         # pylint: disable=no-value-for-parameter
         return (super().__subclasscheck__(subclass) or
-                (issubclass(subclass, ResourceType) and
+                (isinstance(subclass, ResourceTypeMeta) and
                  subclass.to_rt() >= cls.to_rt()))
 
     def __instancecheck__(cls, instance):
         # pylint: disable=no-value-for-parameter
         return (super().__instancecheck__(instance) or
-                (isinstance(instance, ResourceType) and
+                (isinstance(type(instance), ResourceTypeMeta) and
                  type(instance).to_rt() >= cls.to_rt()))
 
 
