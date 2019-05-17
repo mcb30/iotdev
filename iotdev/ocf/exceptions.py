@@ -8,10 +8,6 @@ import re
 class OcfExceptionRegistry(UserDict):
     """Registry of OCF exceptions"""
 
-    def register(self, cls):
-        """Register OCF exception class"""
-        self.data[cls.status] = cls
-
     def __missing__(self, key):
         """Construct OCF exception class"""
         ns = {'status': key, 'phrase': 'Error %s' % key}
@@ -67,7 +63,7 @@ class OcfException(Exception, metaclass=OcfExceptionMeta):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        OcfExceptions.register(cls)
+        OcfExceptions[cls.status] = cls
 
 
 class OcfClientError(OcfException):

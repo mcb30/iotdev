@@ -3,7 +3,7 @@
 from collections import UserDict
 from collections.abc import Mapping
 from .interface import Interfaces
-from .rt import ResourceTypes
+from .rt import ResourceType
 
 
 class ResourceState(UserDict):
@@ -31,7 +31,7 @@ class ResourceState(UserDict):
         """
         if self._rt is None:
             rt = self.data.get('rt', ())
-            self._rt = ResourceTypes.type(*rt)
+            self._rt = ResourceType.from_rt(*rt)
         return self._rt
 
 

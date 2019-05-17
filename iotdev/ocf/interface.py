@@ -4,19 +4,10 @@ An interface defines a subset of accessible properties on a resource,
 and a corresponding list of permitted requests and responses.
 """
 
-from collections import UserDict
 from .exceptions import OcfBadRequest
 
-
-class InterfaceRegistry(UserDict):
-    """Registry of interfaces"""
-
-    def register(self, cls):
-        """Register interface class"""
-        self.data[cls.__name__] = cls
-
-
-Interfaces = InterfaceRegistry()
+Interfaces = {}
+"""Registry of named interfaces"""
 
 
 class Interface():
@@ -31,7 +22,7 @@ class Interface():
         super().__init_subclass__(**kwargs)
         if name is not None:
             cls.__name__ = cls.__qualname__ = name
-        Interfaces.register(cls)
+        Interfaces[cls.__name__] = cls
 
     @staticmethod
     def visible(prop):

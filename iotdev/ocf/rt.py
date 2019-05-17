@@ -1,42 +1,11 @@
 """Resource types"""
 
-from collections import UserDict
+from itertools import chain
 from .property import (BooleanProperty, IntegerProperty, StringProperty,
                        UUIDProperty, ArrayProperty)
 
-
-class ResourceTypeRegistry(UserDict):
-    """Registry of resource types"""
-
-    def register(self, cls):
-        """Register resource type class"""
-        self.data[cls.__name__] = cls
-
-    def type(self, *args):
-        """Construct resource class from resource type name(s)
-
-        Construct a Python class from an unordered list of applicable
-        resource type names (e.g. ``['oic.r.switch.binary',
-        'oic.r.light.brightness']``).
-        """
-
-        # Construct unordered set of base types
-        bases = set(self[x] for x in args) or {ResourceType}
-
-        # Use existing type if only a single base type is specified
-        if len(bases) == 1:
-            return bases.pop()
-
-        # Canonicalise order by MRO length (to ensure a consistent
-        # MRO, if possible), then by name
-        bases = sorted(bases, key=lambda x: (-len(x.__mro__), x.__name__))
-
-        # Construct new type
-        name = '[%s]' % ','.join(x.__name__ for x in bases)
-        return type(name, tuple(bases), {})
-
-
-ResourceTypes = ResourceTypeRegistry()
+ResourceTypes = {}
+"""Registry of named resource types"""
 
 
 class ResourceTypeMeta(type):
@@ -47,12 +16,21 @@ class ResourceTypeMeta(type):
     names) and the values are the property objects.
     """
 
-    def __new__(cls, clsname, bases, namespace, **kwargs):
-        # pylint: disable=protected-access
+    def __new__(mcl, clsname, bases, namespace, name=None, **kwargs):
+        # pylint: disable=bad-mcs-classmethod-argument,protected-access
         namespace['_properties'] = {
             k: v for b in reversed(bases) for k, v in b._properties.items()
         }
-        return super().__new__(cls, clsname, bases, namespace, **kwargs)
+        namespace['_rtname'] = name
+        cls = super().__new__(mcl, clsname, bases, namespace, **kwargs)
+        if name is not None:
+            ResourceTypes[name] = cls
+        return cls
+
+    #
+    # Allow use of ResourceType subclass as a dictionary of Property
+    # objects indexed by property name
+    #
 
     def __getitem__(cls, key):
         return cls._properties[key]
@@ -69,6 +47,89 @@ class ResourceTypeMeta(type):
     def __len__(cls):
         return len(cls._properties)
 
+    #
+    # Allow construction from resource type names
+    #
+
+    def __lt__(cls, other):
+        """Allow resource type classes to be sorted
+
+        Use an ordering that is stable and that results in a
+        consistent method resolution order when used as a list of base
+        classes.
+
+        This is currently achieved by sorting first by length of the
+        MRO tuple (in descending order), then by resource type name
+        (in ascending order, with unnamed resource types last), then
+        by class name.
+        """
+        # pylint: disable=protected-access
+        return (len(cls.__mro__) > len(other.__mro__) or
+                ((cls._rtname is None, cls._rtname, cls.__name__) <
+                 (other._rtname is None, other._rtname, other.__name__)))
+
+    def to_rt(cls):
+        """Set of resource type names
+
+        This is the (unordered) set of named resource types from which
+        the resource type class is constructed.
+        """
+        if cls._rtname is not None:
+            return {cls._rtname}
+        rts = (subclass.to_rt() for subclass in cls.__bases__
+               if issubclass(subclass, ResourceType))
+        return set(chain.from_iterable(rts))
+
+    @staticmethod
+    def from_rt(*args):
+        """Construct resource type class from resource type name(s)
+
+        Construct a Python class from an unordered list of applicable
+        resource type names (e.g. ``['oic.r.switch.binary',
+        'oic.r.light.brightness']``).
+        """
+        bases = sorted(set(ResourceTypes[x] for x in args)) or [ResourceType]
+        if len(bases) == 1:
+            return bases.pop()
+        name = '[%s]' % ','.join(x.__name__ for x in bases)
+        return type(name, tuple(bases), {})
+
+    #
+    # Allow construction via arithmetic operators
+    #
+
+    def __add__(cls, other):
+        # pylint: disable=no-value-for-parameter
+        other_rt = (other.to_rt() if issubclass(other, ResourceType) else
+                    {other} if isinstance(other, str) else
+                    set(other))
+        return cls.from_rt(*(cls.to_rt() | other_rt))
+
+    def __sub__(cls, other):
+        # pylint: disable=no-value-for-parameter
+        other_rt = (other.to_rt() if issubclass(other, ResourceType) else
+                    {other} if isinstance(other, str) else
+                    set(other))
+        return cls.from_rt(*(cls.to_rt() - other_rt))
+
+    __or__ = __add__
+
+    #
+    # Allow issubclass() and isinstance() to use resource type names
+    #
+
+    def __subclasscheck__(cls, subclass):
+        # pylint: disable=no-value-for-parameter
+        return (super().__subclasscheck__(subclass) or
+                (issubclass(subclass, ResourceType) and
+                 subclass.to_rt() >= cls.to_rt()))
+
+    def __instancecheck__(cls, instance):
+        # pylint: disable=no-value-for-parameter
+        return (super().__instancecheck__(instance) or
+                (isinstance(instance, ResourceType) and
+                 type(instance).to_rt() >= cls.to_rt()))
+
 
 class ResourceType(metaclass=ResourceTypeMeta):
     """Resource type base class
@@ -79,6 +140,7 @@ class ResourceType(metaclass=ResourceTypeMeta):
     """
 
     _properties = {}
+    _rtname = None
 
     n = StringProperty(meta=True)
     id = StringProperty(meta=True, writable=False)
@@ -92,12 +154,6 @@ class ResourceType(metaclass=ResourceTypeMeta):
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.resource)
-
-    def __init_subclass__(cls, name=None, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if name is not None:
-            cls.__name__ = cls.__qualname__ = name
-        ResourceTypes.register(cls)
 
     def __getitem__(self, key):
         return self._properties[key].__get__(self, type(self))
