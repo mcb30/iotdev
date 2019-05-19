@@ -4,6 +4,7 @@ An interface defines a subset of accessible properties on a resource,
 and a corresponding list of permitted requests and responses.
 """
 
+from types import MappingProxyType
 from .exceptions import OcfBadRequest
 
 Interfaces = {}
@@ -29,18 +30,18 @@ class Interface():
         """Check visibility of property via this interface"""
         raise NotImplementedError
 
-    def retrieve(self):
+    def retrieve(self, params=MappingProxyType({})):
         """Retrieve resource representation"""
         prop = self.resource.prop
         meta = type(prop)
         # Determine visible and readable properties
         names = [x for x in meta if meta[x].readable and self.visible(meta[x])]
         # Load required property values
-        self.resource.load(names)
+        self.resource.load(names, params)
         # Retrieve visible, readable, and existent (or required) properties
         return {x: prop[x] for x in names if x in prop or meta[x].required}
 
-    def update(self, data):
+    def update(self, data, params=MappingProxyType({})):
         """Update resource representation"""
         prop = self.resource.prop
         meta = type(prop)
@@ -54,7 +55,7 @@ class Interface():
         for name in names:
             prop[name] = data[name]
         # Save property values
-        self.resource.save(names)
+        self.resource.save(names, params)
 
 
 class BaselineInterface(Interface, name='oic.if.baseline'):

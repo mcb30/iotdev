@@ -102,7 +102,7 @@ class TestResource(TestCase):
         self.assertIn('rapidCool', rw)
         del self.fridge.prop.rapidCool
         del self.fridge.prop.rapidFreeze
-        rw = self.fridge.intf['oic.if.rw'].retrieve()
+        rw = self.fridge.retrieve({'if': 'oic.if.rw'})
         self.assertNotIn('rapidFreeze', rw)
         self.assertNotIn('rapidCool', rw)
         self.fridge.intf['oic.if.a'].update({

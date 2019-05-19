@@ -2,7 +2,8 @@
 
 from collections import UserDict
 from collections.abc import Mapping
-from .interface import Interfaces
+from types import MappingProxyType
+from .interface import Interfaces, BaselineInterface
 from .rt import ResourceType, ResourceTypeMeta
 
 
@@ -55,6 +56,8 @@ class Resource():
     A resource is a representation of a physical entity (such as a
     temperature sensor).
     """
+
+    default_intf = BaselineInterface
 
     def __init__(self, state=None):
         self.state = ResourceState(state)
@@ -111,10 +114,20 @@ class Resource():
         """
         return ResourceInterfaces(self)
 
-    def load(self, names):
+    def retrieve(self, params=MappingProxyType({})):
+        """Retrieve resource representation"""
+        intf = self.intf[params.get('if', self.default_intf.__name__)]
+        return intf.retrieve(params)
+
+    def update(self, data, params=MappingProxyType({})):
+        """Update resource representation"""
+        intf = self.intf[params.get('if', self.default_intf.__name__)]
+        intf.update(data, params)
+
+    def load(self, names, params):
         """Load resource properties"""
         pass
 
-    def save(self, names):
+    def save(self, names, params):
         """Save resource properties"""
         pass
