@@ -161,6 +161,9 @@ class ResourceType(metaclass=ResourceTypeMeta):
     def __setitem__(self, key, value):
         self._properties[key].__set__(self, value)
 
+    def __delitem__(self, key):
+        self._properties[key].__delete__(self)
+
     def __contains__(self, key):
         return key in self._properties
 

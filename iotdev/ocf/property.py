@@ -60,6 +60,10 @@ class Property():
         state = self.canonicalise(value)
         instance.resource.state[self.name] = state
 
+    def __delete__(self, instance):
+        """Delete value"""
+        del instance.resource.state[self.name]
+
     def __set_name__(self, owner, name):
         """Set descriptor name"""
         if self.name is None:
