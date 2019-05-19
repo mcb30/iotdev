@@ -45,6 +45,8 @@ class TestResource(TestCase):
         self.assertIsNone(self.fridge.prop.n)
         self.assertIsNone(self.fridge.prop['n'])
         self.assertNotIn('n', self.fridge.state)
+        self.assertNotIn('n', self.fridge.prop)
+        self.assertIn('n', type(self.fridge.prop))
 
     def test_modify_type_via_rt(self):
         """Test ability to modify resource type via `rt` attribute"""

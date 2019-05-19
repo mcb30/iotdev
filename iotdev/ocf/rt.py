@@ -165,13 +165,13 @@ class ResourceType(metaclass=ResourceTypeMeta):
         self._properties[key].__delete__(self)
 
     def __contains__(self, key):
-        return key in self._properties
+        return key in self._properties and key in self.resource.state
 
     def __iter__(self):
-        return iter(self._properties)
+        return (x for x in self._properties if x in self.resource.state)
 
     def __len__(self):
-        return len(self._properties)
+        return sum(x in self.resource.state for x in self._properties)
 
 
 class Device(ResourceType, name='oic.wk.d'):
