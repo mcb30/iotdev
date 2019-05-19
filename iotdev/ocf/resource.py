@@ -110,3 +110,11 @@ class Resource():
         resource.
         """
         return ResourceInterfaces(self)
+
+    def load(self, names):
+        """Load resource properties"""
+        pass
+
+    def save(self, names):
+        """Save resource properties"""
+        pass

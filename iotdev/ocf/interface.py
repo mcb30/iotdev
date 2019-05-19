@@ -35,6 +35,8 @@ class Interface():
         meta = type(prop)
         # Determine visible and readable properties
         names = [x for x in meta if meta[x].readable and self.visible(meta[x])]
+        # Load required property values
+        self.resource.load(names)
         # Retrieve visible, readable, and existent (or required) properties
         return {x: prop[x] for x in names if x in prop or meta[x].required}
 
@@ -51,6 +53,8 @@ class Interface():
         # Update visible and writable properties
         for name in names:
             prop[name] = data[name]
+        # Save property values
+        self.resource.save(names)
 
 
 class BaselineInterface(Interface, name='oic.if.baseline'):
