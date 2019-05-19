@@ -2,7 +2,7 @@
 
 from itertools import chain
 from .property import (BooleanProperty, IntegerProperty, StringProperty,
-                       UUIDProperty, ArrayProperty)
+                       NumericProperty, UUIDProperty, ArrayProperty)
 
 ResourceTypes = {}
 """Registry of named resource types"""
@@ -196,3 +196,9 @@ class Refrigeration(ResourceType, name='oic.r.refrigeration'):
     rapidFreeze = BooleanProperty()
     rapidCool = BooleanProperty()
     defrost = BooleanProperty()
+
+
+class Temperature(ResourceType, name='oic.r.temperature'):
+    """A temperature sensor"""
+
+    temperature = NumericProperty(writable=False)

@@ -90,6 +90,14 @@ class StringProperty(Property):
     canonicalise = str
 
 
+class NumericProperty(Property):
+    """An integer- or float-valued property"""
+
+    @staticmethod
+    def canonicalise(state):
+        return state + 0
+
+
 class UUIDProperty(Property):
     """A UUID-valued property"""
 
