@@ -98,10 +98,19 @@ class TestResource(TestCase):
         rw = self.fridge.intf['oic.if.rw'].retrieve()
         self.assertIn('n', rw)
         self.assertNotIn('rt', rw)
+        self.assertIn('rapidFreeze', rw)
+        self.assertIn('rapidCool', rw)
+        del self.fridge.prop.rapidCool
+        del self.fridge.prop.rapidFreeze
+        rw = self.fridge.intf['oic.if.rw'].retrieve()
+        self.assertNotIn('rapidFreeze', rw)
+        self.assertNotIn('rapidCool', rw)
         self.fridge.intf['oic.if.a'].update({
             'rapidFreeze': True,
             'n': 'ignored_name',
         })
+        self.assertIn('rapidFreeze', self.fridge.prop)
+        self.assertNotIn('rapidCool', self.fridge.prop)
         self.assertTrue(self.fridge.prop.rapidFreeze)
         self.assertEqual(self.fridge.prop.n, 'my_fridge')
 

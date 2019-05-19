@@ -32,23 +32,25 @@ class Interface():
     def retrieve(self):
         """Retrieve resource representation"""
         prop = self.resource.prop
-        # Retrieve visible and readable properties
-        data = {k: prop[k] for k in prop if
-                type(prop)[k].readable and self.visible(type(prop)[k])}
-        return data
+        meta = type(prop)
+        # Determine visible and readable properties
+        names = [x for x in meta if meta[x].readable and self.visible(meta[x])]
+        # Retrieve visible, readable, and existent (or required) properties
+        return {x: prop[x] for x in names if x in prop or meta[x].required}
 
     def update(self, data):
         """Update resource representation"""
         prop = self.resource.prop
-        # Ignore any properties not visible via this interface
-        data = {k: v for k, v in data.items() if self.visible(type(prop)[k])}
+        meta = type(prop)
+        # Determine visible properties
+        names = [x for x in data if self.visible(meta[x])]
         # Fail on an attempt to update any read-only properties
-        readonly = [k for k in data if not type(prop)[k].writable]
+        readonly = [x for x in names if not meta[x].writable]
         if readonly:
             raise OcfBadRequest('Not writable: %s' % ', '.join(readonly))
         # Update visible and writable properties
-        for k, v in data.items():
-            prop[k] = v
+        for name in names:
+            prop[name] = data[name]
 
 
 class BaselineInterface(Interface, name='oic.if.baseline'):
