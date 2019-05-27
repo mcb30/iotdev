@@ -1,27 +1,10 @@
 """Resources"""
 
-from collections import UserDict
 from collections.abc import Mapping
 from types import MappingProxyType
 from .interface import Interfaces, BaselineInterface
 from .rt import ResourceType, ResourceTypeMeta
-
-
-class ResourceState(UserDict):
-    """Raw resource state
-
-    This is the raw state dictionary as produced by deserialising a
-    JSON or CBOR representation of the resource state.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.cached_rt = None
-
-    def __setitem__(self, key, value):
-        super().__setitem__(key, value)
-        if key == 'rt':
-            self.cached_rt = None
+from .state import TrackedResourceState
 
 
 class ResourceInterfaces(Mapping):
@@ -60,10 +43,16 @@ class Resource():
     default_intf = BaselineInterface
 
     def __init__(self, state=None):
-        self.state = ResourceState(state)
+        self.cached_rt = None
+        self.state = TrackedResourceState(state)
+        self.state.track('rt', self.clear_cached_rt)
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.state)
+
+    def clear_cached_rt(self):
+        """Clear cached resource type"""
+        self.cached_rt = None
 
     @property
     def rt(self):
@@ -72,11 +61,10 @@ class Resource():
         This is the Python class dynamically constructed based on the
         `rt` state value.
         """
-        state = self.state
-        if state.cached_rt is None:
-            rt = state.get('rt', ())
-            state.cached_rt = ResourceType.from_rt(*rt)
-        return state.cached_rt
+        if self.cached_rt is None:
+            rt = self.state.get('rt', ())
+            self.cached_rt = ResourceType.from_rt(*rt)
+        return self.cached_rt
 
     @rt.setter
     def rt(self, value):

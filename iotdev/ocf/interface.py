@@ -6,6 +6,7 @@ and a corresponding list of permitted requests and responses.
 
 from types import MappingProxyType
 from .exceptions import OcfBadRequest
+from .state import ResourceState
 
 Interfaces = {}
 """Registry of named interfaces"""
@@ -46,7 +47,9 @@ class Interface(metaclass=InterfaceMeta):
         # Load required property values
         self.resource.load(names, params)
         # Retrieve visible, readable, and existent (or required) properties
-        return {x: prop[x] for x in names if x in prop or meta[x].required}
+        return ResourceState({
+            x: prop[x] for x in names if x in prop or meta[x].required
+        })
 
     def update(self, data, params=MappingProxyType({})):
         """Update resource representation"""
