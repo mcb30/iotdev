@@ -11,7 +11,14 @@ Interfaces = {}
 """Registry of named interfaces"""
 
 
-class Interface():
+class InterfaceMeta(type):
+    """Interface metaclass"""
+
+    def __str__(cls):
+        return cls.__name__
+
+
+class Interface(metaclass=InterfaceMeta):
     """Interface base class"""
 
     def __init__(self, resource):

@@ -38,10 +38,10 @@ class ResourceInterfaces(Mapping):
         return '%s(%r)' % (self.__class__.__name__, self.resource)
 
     def __getitem__(self, key):
-        return Interfaces[key](self.resource)
+        return Interfaces[str(key)](self.resource)
 
     def __contains__(self, key):
-        return key in self.resource.state.get('if', ())
+        return str(key) in self.resource.state.get('if', ())
 
     def __iter__(self):
         return iter(self.resource.state.get('if', ()))
@@ -116,12 +116,12 @@ class Resource():
 
     def retrieve(self, params=MappingProxyType({})):
         """Retrieve resource representation"""
-        intf = self.intf[params.get('if', self.default_intf.__name__)]
+        intf = self.intf[params.get('if', self.default_intf)]
         return intf.retrieve(params)
 
     def update(self, data, params=MappingProxyType({})):
         """Update resource representation"""
-        intf = self.intf[params.get('if', self.default_intf.__name__)]
+        intf = self.intf[params.get('if', self.default_intf)]
         intf.update(data, params)
 
     def load(self, names, params):
