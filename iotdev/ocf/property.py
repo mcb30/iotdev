@@ -3,6 +3,8 @@
 from uuid import UUID
 from orderedset import OrderedSet
 
+Unspecified = object()
+
 
 class Property():
     """A resource property
@@ -14,8 +16,30 @@ class Property():
     sensor.
     """
 
-    def __init__(self, name=None, meta=False, required=False, readable=True,
-                 writable=True, default=None):
+    meta = False
+    """Property is metadata
+
+    Metadata properties (such as `n` and `rt`) are used to describe
+    the resource itself, in contrast to operational properties (such
+    as `temperature`) which describe the current state of the
+    resource.
+    """
+
+    required = False
+    """Property is mandatory"""
+
+    readable = True
+    """Property value may be read"""
+
+    writable = True
+    """Property value may be written"""
+
+    default = None
+    """Default value"""
+
+    def __init__(self, name=None, meta=Unspecified, required=Unspecified,
+                 readable=Unspecified, writable=Unspecified,
+                 default=Unspecified):
         # pylint: disable=too-many-arguments
 
         self.name = name
@@ -25,26 +49,16 @@ class Property():
         used.
         """
 
-        self.meta = meta
-        """Property is metadata
-
-        Metadata properties (such as `n` and `rt`) are used to
-        describe the resource itself, in contrast to operational
-        properties (such as `temperature`) which describe the current
-        state of the resource.
-        """
-
-        self.required = required
-        """Property is mandatory"""
-
-        self.readable = readable
-        """Property value may be read"""
-
-        self.writable = writable
-        """Property value may be written"""
-
-        self.default = default
-        """Default value"""
+        if meta is not Unspecified:
+            self.meta = meta
+        if required is not Unspecified:
+            self.required = required
+        if readable is not Unspecified:
+            self.readable = readable
+        if writable is not Unspecified:
+            self.writable = writable
+        if default is not Unspecified:
+            self.default = default
 
     def __get__(self, instance, owner):
         """Get value"""
@@ -125,6 +139,8 @@ class ArrayProperty(Property, metaclass=ContainerPropertyMeta):
 
     element = Property
 
+    default = tuple()
+
     def canonicalise(self, state):
         return tuple(self.element.canonicalise(x) for x in state)
 
@@ -133,6 +149,11 @@ class OrderedSetProperty(Property, metaclass=ContainerPropertyMeta):
     """An ordered set-valued property"""
 
     element = Property
+
+    @property
+    def default(self):
+        """Default value"""
+        return OrderedSet()
 
     def canonicalise(self, state):
         return OrderedSet(self.element.canonicalise(x) for x in state)
