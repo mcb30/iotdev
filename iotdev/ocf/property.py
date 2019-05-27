@@ -1,6 +1,7 @@
 """Resource properties"""
 
 from uuid import UUID
+from orderedset import OrderedSet
 
 
 class Property():
@@ -110,19 +111,28 @@ class UUIDProperty(Property):
         return state if isinstance(state, UUID) else UUID(state)
 
 
-class ArrayPropertyMeta(type):
-    """Array-valued property metaclass"""
+class ContainerPropertyMeta(type):
+    """Container property metaclass"""
 
     def __getitem__(cls, key):
-        """Construct array-valued property for specified entry type"""
+        """Construct container property for specified entry type"""
         name = '%s[%s]' % (cls.__name__, key.__name__)
-        return type(name, (cls,), {'subtype': key})
+        return type(name, (cls,), {'element': key})
 
 
-class ArrayProperty(Property, metaclass=ArrayPropertyMeta):
+class ArrayProperty(Property, metaclass=ContainerPropertyMeta):
     """An array-valued property"""
 
-    subtype = Property
+    element = Property
 
     def canonicalise(self, state):
-        return tuple(self.subtype.canonicalise(x) for x in state)
+        return tuple(self.element.canonicalise(x) for x in state)
+
+
+class OrderedSetProperty(Property, metaclass=ContainerPropertyMeta):
+    """An ordered set-valued property"""
+
+    element = Property
+
+    def canonicalise(self, state):
+        return OrderedSet(self.element.canonicalise(x) for x in state)

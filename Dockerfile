@@ -9,7 +9,7 @@ USER root
 
 RUN dnf update -y
 
-RUN dnf install -y python3-coverage
+RUN dnf install -y python3-coverage python3-orderedset
 
 COPY . .
 

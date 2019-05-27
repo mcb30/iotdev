@@ -1,8 +1,9 @@
 """Resource types"""
 
 from itertools import chain
+from orderedset import OrderedSet
 from .property import (BooleanProperty, IntegerProperty, StringProperty,
-                       NumericProperty, UUIDProperty, ArrayProperty)
+                       NumericProperty, UUIDProperty, OrderedSetProperty)
 
 ResourceTypes = {}
 """Registry of named resource types"""
@@ -71,14 +72,14 @@ class ResourceTypeMeta(type):
     def to_rt(cls):
         """Set of resource type names
 
-        This is the (unordered) set of named resource types from which
-        the resource type class is constructed.
+        This is the ordered set of named resource types from which the
+        resource type class is constructed.
         """
         if cls._rtname is not None:
-            return {cls._rtname}
+            return OrderedSet((cls._rtname,))
         rts = (subclass.to_rt() for subclass in cls.__bases__
                if issubclass(subclass, ResourceType))
-        return set(chain.from_iterable(rts))
+        return OrderedSet(chain.from_iterable(rts))
 
     @staticmethod
     def from_rt(*args):
@@ -122,13 +123,13 @@ class ResourceTypeMeta(type):
         # pylint: disable=no-value-for-parameter
         return (super().__subclasscheck__(subclass) or
                 (isinstance(subclass, ResourceTypeMeta) and
-                 subclass.to_rt() >= cls.to_rt()))
+                 cls.to_rt() <= subclass.to_rt()))
 
     def __instancecheck__(cls, instance):
         # pylint: disable=no-value-for-parameter
         return (super().__instancecheck__(instance) or
                 (isinstance(type(instance), ResourceTypeMeta) and
-                 type(instance).to_rt() >= cls.to_rt()))
+                 cls.to_rt() <= type(instance).to_rt()))
 
 
 class ResourceType(metaclass=ResourceTypeMeta):
@@ -144,10 +145,10 @@ class ResourceType(metaclass=ResourceTypeMeta):
 
     n = StringProperty(meta=True)
     id = StringProperty(meta=True, writable=False)
-    rt = ArrayProperty[StringProperty](meta=True, required=True,
-                                       writable=False)
-    if_ = ArrayProperty[StringProperty](name="if", meta=True, required=True,
-                                        writable=False)
+    rt = OrderedSetProperty[StringProperty](meta=True, required=True,
+                                            writable=False)
+    if_ = OrderedSetProperty[StringProperty](name="if", meta=True,
+                                             required=True, writable=False)
 
     def __init__(self, resource):
         self.resource = resource
