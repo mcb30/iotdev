@@ -65,6 +65,8 @@ class ResourceTypeMeta(type):
         by class name.
         """
         # pylint: disable=protected-access
+        if not isinstance(other, ResourceTypeMeta):
+            return NotImplemented
         return (len(cls.__mro__) > len(other.__mro__) or
                 ((cls._rtname is None, cls._rtname, cls.__name__) <
                  (other._rtname is None, other._rtname, other.__name__)))
