@@ -14,6 +14,16 @@ class ResourceState(UserDict):
     json_encoder = JSONEncoder()
     json_decoder = JSONDecoder()
 
+    def __init__(self, data=None, json=None):
+        super().__init__(data)
+        if json is not None:
+            if data is not None:
+                raise TypeError("Specify at most one of 'data' or 'json'")
+            self.json = json
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.data)
+
     @property
     def json(self):
         """JSON serialisation of resource state"""
@@ -28,9 +38,9 @@ class ResourceState(UserDict):
 class TrackedResourceState(ResourceState):
     """Resource state representation with change tracking support"""
 
-    def __init__(self, state=None):
+    def __init__(self, data=None, json=None):
         self.tracked = defaultdict(list)
-        super().__init__(state)
+        super().__init__(data=data, json=json)
 
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
