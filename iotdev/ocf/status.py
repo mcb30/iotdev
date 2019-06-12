@@ -69,6 +69,27 @@ class Status():
         return self.label or "%s (%s)" % ("Success" if self else "Error", self)
 
 
+class StatusCategory(Status):
+    """A response status category"""
+
+    __slots__ = []
+
+    registry = {}
+
+    minor = None
+
+    @staticmethod
+    def normalise(code):
+        """Normalise response code"""
+        if isinstance(code, str):
+            (major, _) = code.split('.')
+            code = int(major) << SHIFT
+        return code
+
+    def __str__(self):
+        return '%d.xx' % self.major
+
+
 Created = Status('2.01', "Created")
 Deleted = Status('2.02', "Deleted")
 Valid = Status('2.03', "Valid")
@@ -95,3 +116,6 @@ BadGateway = Status('5.02', "Bad Gateway")
 ServiceUnavailable = Status('5.03', "Service Unavailable")
 GatewayTimeout = Status('5.04', "Gateway Timeout")
 ProxyingNotSupported = Status('5.05', "Proxying Not Supported")
+
+ClientError = StatusCategory('4.xx', "Client Error")
+ServerError = StatusCategory('5.xx', "Server Error")
