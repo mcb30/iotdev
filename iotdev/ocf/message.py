@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from multidict import MultiDict
 from .state import ResourceState
+from .status import Created, Deleted, Changed, Content
 
 RequestTypes = {}
 
@@ -55,35 +56,46 @@ class Request(Message):
         """Request method"""
         pass
 
+    @property
+    @abstractmethod
+    def success(self):
+        """Success status"""
+        pass
+
 
 class Create(Request):
     """A CREATE message"""
 
     method = 'CREATE'
+    success = Created
 
 
 class Retrieve(Request):
     """A RETRIEVE message"""
 
     method = 'RETRIEVE'
+    success = Content
 
 
 class Update(Request):
     """An UPDATE message"""
 
     method = 'UPDATE'
+    success = Changed
 
 
 class Delete(Request):
     """A DELETE message"""
 
     method = 'DELETE'
+    success = Deleted
 
 
 class Notify(Request):
     """A NOTIFY message"""
 
     method = 'NOTIFY'
+    success = Content
 
 
 class Response(Message):
