@@ -75,12 +75,7 @@ class StatusMeta(type):
     def __new__(mcl, name, bases, namespace, code=None, label=None, **kwargs):
         # pylint: disable=bad-mcs-classmethod-argument
         # pylint: disable=too-many-arguments, unused-argument
-        cls = super().__new__(mcl, name, bases, namespace, **kwargs)
-        # Ensure that only one class ever exists for a given code,
-        # since try..except relies on identity comparisons
-        if code is not None:
-            cls = Statuses.setdefault((code.major, code.minor), cls)
-        return cls
+        return super().__new__(mcl, name, bases, namespace, **kwargs)
 
     def __init__(cls, name, bases, namespace, code=None, label=None, **kwargs):
         # pylint: disable=too-many-arguments
@@ -199,6 +194,9 @@ def Status(code, label=None):
         if code.category is not None:
             bases.insert(0, Status(code.category))
         cls = type(name, tuple(bases), {}, code=code, label=label)
+        # Ensure that only one class ever exists for a given code,
+        # since try..except relies on identity comparisons
+        cls = Statuses.setdefault((code.major, code.minor), cls)
     return cls
 
 
