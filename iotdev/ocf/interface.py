@@ -5,8 +5,8 @@ and a corresponding list of permitted requests and responses.
 """
 
 from types import MappingProxyType
-from .exceptions import OcfBadRequest
 from .state import ResourceState
+from .status import BadRequest
 
 Interfaces = {}
 """Registry of named interfaces"""
@@ -60,7 +60,7 @@ class Interface(metaclass=InterfaceMeta):
         # Fail on an attempt to update any read-only properties
         readonly = [x for x in names if not meta[x].writable]
         if readonly:
-            raise OcfBadRequest('Not writable: %s' % ', '.join(readonly))
+            raise BadRequest('Not writable: %s' % ', '.join(readonly))
         # Update visible and writable properties
         for name in names:
             prop[name] = data[name]
